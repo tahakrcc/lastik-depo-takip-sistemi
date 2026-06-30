@@ -1,0 +1,63 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "bin": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:electron": "electron .",
+    "prebuild:exe": "xcopy /E /I /Y ..\\frontend-demo .\\frontend-demo",
+    "prebuild:mac": "cp -R ../frontend-demo ./frontend-demo",
+    "build:exe": "electron-builder --win",
+    "build:mac": "electron-builder --mac"
+  },
+  "build": {
+    "appId": "com.capraz.stok",
+    "productName": "Stok Yönetimi",
+    "directories": {
+      "output": "../dist-electron"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Stok Yonetimi"
+    },
+    "files": [
+      "**/*",
+      ".env",
+      "!node_modules/sqlite3",
+      "!node_modules/pkg"
+    ]
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.2.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.7.1"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "electron": "^42.5.1",
+    "electron-builder": "^26.15.3",
+    "wait-on": "^9.0.10"
+  }
+}

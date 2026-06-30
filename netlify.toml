@@ -1,0 +1,8 @@
+[build]
+  publish = "frontend-demo"
+  command = "" # Statik dosyalar olduğu için build komutuna gerek yok
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200 # SPA (Single Page Application) yönlendirmesi için

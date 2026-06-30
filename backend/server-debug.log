@@ -1,0 +1,15 @@
+[2026-06-22T08:04:27.109Z] Incoming: GET /
+[2026-06-22T08:04:27.189Z] Incoming: GET /css/style.css
+[2026-06-22T08:04:27.191Z] Incoming: GET /js/api.js
+[2026-06-22T08:04:27.193Z] Incoming: GET /js/app.js
+[2026-06-22T08:04:27.223Z] Incoming: GET /api/movements?type=IN
+[2026-06-22T08:04:27.236Z] Response: 403 /?type=IN -> {"error":"Oturum süresi dolmuş veya geçersiz. Lütfen tekrar giriş yapın."}
+[2026-06-22T08:04:27.238Z] Incoming: GET /api/movements?type=OUT
+[2026-06-22T08:04:27.240Z] Response: 403 /?type=OUT -> {"error":"Oturum süresi dolmuş veya geçersiz. Lütfen tekrar giriş yapın."}
+[2026-06-22T08:04:27.241Z] Incoming: GET /api/sales
+[2026-06-22T08:04:27.243Z] Response: 403 / -> {"error":"Oturum süresi dolmuş veya geçersiz. Lütfen tekrar giriş yapın."}
+[2026-06-22T08:04:27.244Z] Incoming: GET /api/stocks
+[2026-06-22T08:04:27.245Z] Response: 403 / -> {"error":"Oturum süresi dolmuş veya geçersiz. Lütfen tekrar giriş yapın."}
+[2026-06-22T08:04:27.339Z] Incoming: GET /favicon.ico
+[2026-06-22T08:05:05.745Z] Incoming: GET /css/style.css
+[2026-06-22T08:05:05.810Z] Incoming: GET /.well-known/appspecific/com.chrome.devtools.json

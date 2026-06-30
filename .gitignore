@@ -1,0 +1,9 @@
+node_modules/
+dist/
+dist-electron/
+dist.rar
+.env
+*.exe
+*.dmg
+*.zip
+.DS_Store
