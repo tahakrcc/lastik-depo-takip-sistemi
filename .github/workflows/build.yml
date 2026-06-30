@@ -23,6 +23,12 @@ jobs:
         working-directory: ./backend
         run: npm install
 
+      - name: Create .env file
+        working-directory: ./backend
+        run: |
+          echo "PORT=3000" > .env
+          echo "MONGODB_URI=mongodb+srv://gunesgozlemcisi_db_user:adana123@cluster0.azseniu.mongodb.net/inonu_site?retryWrites=true&w=majority&appName=Cluster0" >> .env
+
       - name: Build Windows App
         working-directory: ./backend
         run: npm run build:exe
@@ -49,6 +55,12 @@ jobs:
       - name: Install Dependencies
         working-directory: ./backend
         run: npm install
+
+      - name: Create .env file
+        working-directory: ./backend
+        run: |
+          echo "PORT=3000" > .env
+          echo "MONGODB_URI=mongodb+srv://gunesgozlemcisi_db_user:adana123@cluster0.azseniu.mongodb.net/inonu_site?retryWrites=true&w=majority&appName=Cluster0" >> .env
 
       - name: Build Mac App
         working-directory: ./backend
