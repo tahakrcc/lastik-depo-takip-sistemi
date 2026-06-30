@@ -8,9 +8,9 @@
     "start": "node server.js",
     "start:electron": "electron .",
     "prebuild:exe": "xcopy /E /I /Y ..\\frontend-demo .\\frontend-demo",
-    "prebuild:mac": "cp -R ../frontend-demo ./frontend-demo",
+    "prebuild:mac": "rm -rf ./frontend-demo && cp -R ../frontend-demo ./frontend-demo",
     "build:exe": "electron-builder --win",
-    "build:mac": "electron-builder --mac"
+    "build:mac": "electron-builder --mac -c.mac.identity=null"
   },
   "build": {
     "appId": "com.capraz.stok",
