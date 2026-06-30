@@ -41,7 +41,7 @@
     ]
   },
   "keywords": [],
-  "author": "",
+  "repository": "tahakrcc/lastik-depo-takip-sistemi",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^3.0.3",
