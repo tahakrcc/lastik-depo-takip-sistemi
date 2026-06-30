@@ -78,3 +78,30 @@ jobs:
         with:
           name: mac-setup
           path: dist-electron/*.dmg
+
+  create-release:
+    needs: [build-windows, build-mac]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Windows Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-setup
+          path: release-files
+
+      - name: Download Mac Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: mac-setup
+          path: release-files
+
+      - name: Create Public Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: "v1.0.${{ github.run_number }}"
+          name: "Stok Yönetimi v1.0.${{ github.run_number }}"
+          draft: false
+          prerelease: false
+          files: release-files/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
