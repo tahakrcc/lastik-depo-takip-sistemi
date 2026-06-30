@@ -7,8 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "start:electron": "electron .",
-    "build:exe": "electron-builder --win",
-    "build:mac": "electron-builder --mac -c.mac.identity=null"
+    "build:exe": "electron-builder --win -p always",
+    "build:mac": "electron-builder --mac -c.mac.identity=null -p always"
   },
   "author": "Tahakrcc",
   "build": {
