@@ -29,7 +29,7 @@ async function initDb() {
         if (userCount === 0) {
             const adminHash = bcrypt.hashSync('adana01', 10);
             await User.create({
-                username: 'çapraz',
+                username: 'yildizlarotomotiv',
                 password_hash: adminHash,
                 role: 'admin',
                 permissions: '["all"]'
