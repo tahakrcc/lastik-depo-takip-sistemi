@@ -158,6 +158,7 @@ tbody tr:hover { background-color: var(--bg-main); }
 .badge { padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
 .badge-in { background-color: var(--success-bg); color: var(--success-text); }
 .badge-out { background-color: var(--danger-bg); color: var(--danger-text); }
+.badge-sale { background-color: #e6f0ff; color: var(--primary); }
 .badge-edit { background-color: #E0F2FE; color: #0284C7; }
 
 .status-dot {

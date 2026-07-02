@@ -24,7 +24,7 @@ exports.processSale = async (s) => {
     await saleRepository.insert(s);
 
     await movementRepository.insert({
-        type: 'OUT', sku: s.sku, brand, model, warehouse: s.warehouse, qty: s.qty, date: dateStr
+        type: 'SALE', sku: s.sku, brand, model, warehouse: s.warehouse, qty: s.qty, date: dateStr
     });
 
     if (stock) {

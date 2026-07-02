@@ -431,6 +431,7 @@ const app = {
             let bText = '';
             if (m.type === 'IN') { bClass = 'badge-in'; bText = 'Giriş'; }
             else if (m.type === 'OUT') { bClass = 'badge-out'; bText = 'Çıkış'; }
+            else if (m.type === 'SALE') { bClass = 'badge-sale'; bText = 'Satış'; }
             else if (m.type === 'EDIT') { bClass = 'badge-edit'; bText = 'Düzenleme'; }
 
             tbody.innerHTML += `
