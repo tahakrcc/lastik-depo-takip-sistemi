@@ -5,7 +5,8 @@ exports.findByUsername = async (username) => {
 };
 
 exports.getAll = async () => {
-    return await User.find({ role: { $ne: 'admin' } }).select('id username role permissions');
+    // Admin hesabını da listelemek için filtreyi kaldırdık
+    return await User.find().select('username role permissions');
 };
 
 exports.insert = async (username, passwordHash, role, permissions) => {
@@ -14,6 +15,10 @@ exports.insert = async (username, passwordHash, role, permissions) => {
     return savedUser.id;
 };
 
+exports.update = async (id, updateData) => {
+    await User.updateOne({ _id: id }, { $set: updateData });
+};
+
 exports.remove = async (id) => {
-    await User.deleteOne({ _id: id, role: { $ne: 'admin' } });
+    await User.deleteOne({ _id: id, role: { $ne: 'admin' } }); // Admin silinemesin diye güvenlik önlemi
 };

@@ -722,14 +722,45 @@ const app = {
 
     filterSales: () => {
         const search = document.getElementById('salesSearchInput').value.toLowerCase();
+        const whFilter = document.getElementById('salesWarehouseFilter') ? document.getElementById('salesWarehouseFilter').value : 'ALL';
+        const dateFilter = document.getElementById('salesDateFilter') ? document.getElementById('salesDateFilter').value : 'ALL';
+        
         const tbody = document.getElementById('sales-tbody');
         tbody.innerHTML = '';
+
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        
+        // Start of week (Monday)
+        const day = now.getDay() || 7; 
+        const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day + 1).getTime();
+        
+        // Start of month
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
         const filtered = app.cachedSales.filter(s => {
             const matchName = s.customerName.toLowerCase().includes(search);
             const matchPhone = s.customerPhone.includes(search);
             const matchSku = s.sku.toLowerCase().includes(search);
-            return matchName || matchPhone || matchSku;
+            const matchBrand = (s.brand || '').toLowerCase().includes(search);
+            const matchSearch = matchName || matchPhone || matchSku || matchBrand;
+
+            const matchWh = whFilter === 'ALL' || s.warehouse === whFilter;
+
+            let matchDate = true;
+            if (dateFilter !== 'ALL') {
+                // Parse date "DD.MM.YYYY HH:MM" to timestamp
+                const parts = s.date.split(' ');
+                const dateParts = parts[0].split('.');
+                const timeParts = parts[1] ? parts[1].split(':') : [0,0];
+                const sDate = new Date(dateParts[2], parseInt(dateParts[1])-1, dateParts[0], timeParts[0], timeParts[1]).getTime();
+
+                if (dateFilter === 'TODAY') matchDate = sDate >= startOfDay;
+                else if (dateFilter === 'WEEK') matchDate = sDate >= startOfWeek;
+                else if (dateFilter === 'MONTH') matchDate = sDate >= startOfMonth;
+            }
+
+            return matchSearch && matchWh && matchDate;
         });
 
         if (filtered.length === 0) {
@@ -759,17 +790,61 @@ const app = {
     openNewSaleModal: () => {
         document.getElementById('saleCustomerName').value = '';
         document.getElementById('saleCustomerPhone').value = '';
-        document.getElementById('saleSku').value = '';
         document.getElementById('saleQty').value = '1';
         document.getElementById('salePrice').value = '';
-        app.loadSaleWarehouses();
+        document.getElementById('saleStockSearch').value = '';
+
+        app.saleBackToStep1();
+        app.filterSaleStock(); // Load current stocks into table
         document.getElementById('newSaleModal').classList.add('active');
     },
 
-    loadSaleWarehouses: async () => {
-        const meta = await MockAPI.getMetadata();
-        const whSel = document.getElementById('saleWarehouse');
-        whSel.innerHTML = meta.warehouses.map(w => `<option value="${w}">${w}</option>`).join('');
+    filterSaleStock: () => {
+        const search = document.getElementById('saleStockSearch').value.toLowerCase();
+        const tbody = document.getElementById('sale-stock-body');
+        tbody.innerHTML = '';
+
+        // Only show items that are in stock (qty > 0)
+        const available = app.cachedStocks.filter(s => s.qty > 0 && 
+            (s.sku.toLowerCase().includes(search) || 
+             (s.brand || '').toLowerCase().includes(search) || 
+             (s.model || '').toLowerCase().includes(search))
+        );
+
+        if (available.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999;">Uygun stok bulunamadı.</td></tr>';
+            return;
+        }
+
+        available.forEach(s => {
+            const escapedBrand = (s.brand || '').replace(/'/g, "\\'");
+            const escapedModel = (s.model || '').replace(/'/g, "\\'");
+            tbody.innerHTML += `
+                <tr style="cursor:pointer;" onclick="app.selectSaleStock('${s.sku}', '${s.warehouse}', ${s.qty}, '${escapedBrand}', '${escapedModel}')">
+                    <td><button class="btn btn-outline btn-small"><i class='bx bx-check'></i></button></td>
+                    <td style="font-weight:500;">${s.sku}</td>
+                    <td>${s.brand} ${s.model}</td>
+                    <td><span class="badge" style="background:#f3f4f6; color:#374151;">${s.warehouse}</span></td>
+                    <td style="font-weight:600; color:#10b981;">${s.qty}</td>
+                </tr>
+            `;
+        });
+    },
+
+    selectSaleStock: (sku, warehouse, maxQty, brand, model) => {
+        document.getElementById('saleSku').value = sku;
+        document.getElementById('saleWarehouse').value = warehouse;
+        document.getElementById('saleMaxQty').value = maxQty;
+        document.getElementById('saleQty').max = maxQty;
+        document.getElementById('sale-selected-product').innerText = `Seçilen Ürün: ${sku} - ${brand} ${model} (${warehouse} - Maks: ${maxQty} adet)`;
+        
+        document.getElementById('saleStep1').style.display = 'none';
+        document.getElementById('saleStep2').style.display = 'block';
+    },
+
+    saleBackToStep1: () => {
+        document.getElementById('saleStep2').style.display = 'none';
+        document.getElementById('saleStep1').style.display = 'block';
     },
 
     closeNewSaleModal: () => {
@@ -782,10 +857,16 @@ const app = {
         const sku = document.getElementById('saleSku').value.trim();
         const warehouse = document.getElementById('saleWarehouse').value;
         const qty = parseInt(document.getElementById('saleQty').value);
+        const maxQty = parseInt(document.getElementById('saleMaxQty').value);
         const price = parseFloat(document.getElementById('salePrice').value);
 
         if (!cName || !cPhone || !sku || !qty || isNaN(price)) {
             app.showToast("Lütfen tüm alanları doldurun.", "error");
+            return;
+        }
+
+        if (qty > maxQty) {
+            app.showToast(`Stokta sadece ${maxQty} adet var. Fazla satış yapılamaz.`, "error");
             return;
         }
 
@@ -826,9 +907,40 @@ const app = {
     },
 
     openPersonnelModal: () => {
+        document.getElementById('p_modal_title').innerText = 'Yeni Personel Ekle';
+        document.getElementById('p_submit_btn').innerText = 'Oluştur';
+        document.getElementById('p_password_hint').style.display = 'none';
+        document.getElementById('p_perms_group').style.display = 'block';
+        document.getElementById('p_password').required = true;
+        
+        document.getElementById('p_id').value = '';
         document.getElementById('p_username').value = '';
         document.getElementById('p_password').value = '';
         document.querySelectorAll('input[name="p_perms"]').forEach(cb => cb.checked = false);
+        document.getElementById('personnelModal').classList.add('active');
+    },
+
+    openEditPersonnelModal: (id, username, role, permsString) => {
+        document.getElementById('p_modal_title').innerText = role === 'admin' ? 'Yönetici Düzenle' : 'Personel Düzenle';
+        document.getElementById('p_submit_btn').innerText = 'Kaydet';
+        document.getElementById('p_password_hint').style.display = 'inline';
+        document.getElementById('p_password').required = false;
+
+        document.getElementById('p_id').value = id;
+        document.getElementById('p_username').value = username;
+        document.getElementById('p_password').value = '';
+
+        if (role === 'admin') {
+            document.getElementById('p_perms_group').style.display = 'none';
+        } else {
+            document.getElementById('p_perms_group').style.display = 'block';
+            let perms = [];
+            try { perms = permsString ? JSON.parse(decodeURIComponent(permsString)) : []; } catch(e){}
+            document.querySelectorAll('input[name="p_perms"]').forEach(cb => {
+                cb.checked = perms.includes(cb.value);
+            });
+        }
+        
         document.getElementById('personnelModal').classList.add('active');
     },
 
@@ -837,18 +949,32 @@ const app = {
     },
 
     handlePersonnelSubmit: async () => {
+        const id = document.getElementById('p_id').value;
         const username = document.getElementById('p_username').value;
         const password = document.getElementById('p_password').value;
         const perms = Array.from(document.querySelectorAll('input[name="p_perms"]:checked')).map(cb => cb.value);
         
-        if (!username || password.length < 5) {
-            app.showToast("Kullanıcı adı ve en az 5 karakterli şifre girin.", "error");
+        if (!username) {
+            app.showToast("Kullanıcı adı girmelisiniz.", "error");
+            return;
+        }
+
+        if (!id && password.length < 5) {
+            app.showToast("Yeni eklenen personel için en az 5 karakterli şifre girmelisiniz.", "error");
             return;
         }
         
-        const res = await MockAPI.addUser(username, password, perms);
+        let res;
+        if (id) {
+            // Update
+            res = await MockAPI.updateUser(id, username, password, perms);
+        } else {
+            // Create
+            res = await MockAPI.addUser(username, password, perms);
+        }
+
         if (res && res.success) {
-            app.showToast("Personel eklendi", "success");
+            app.showToast(id ? "Kullanıcı güncellendi" : "Personel eklendi", "success");
             app.closePersonnelModal();
             app.loadPersonnelList();
         } else {
@@ -872,12 +998,20 @@ const app = {
             const tr = document.createElement('tr');
             const permsText = u.permissions && u.permissions.length > 0 ? u.permissions.join(', ') : 'Yetki Yok';
             
+            let actionButtons = `
+                <button class="btn btn-outline btn-small" onclick="app.openEditPersonnelModal('${u.id}', '${u.username}', '${u.role}', '${encodeURIComponent(JSON.stringify(u.permissions))}')" style="margin-right:5px;"><i class='bx bx-edit' style="color:var(--primary)"></i></button>
+            `;
+
+            if (u.role !== 'admin') {
+                actionButtons += `<button class="btn btn-outline btn-small" onclick="app.deletePersonnel('${u.id}')"><i class='bx bx-trash' style="color:var(--danger-text)"></i></button>`;
+            }
+
             tr.innerHTML = `
                 <td>${u.username}</td>
                 <td><span class="status-badge" style="background:#e0f2fe;color:#0284c7;">${u.role}</span></td>
-                <td style="font-size:12px; color:#666;">${permsText}</td>
+                <td style="font-size:12px; color:#666;">${u.role === 'admin' ? 'Tüm Yetkiler' : permsText}</td>
                 <td style="text-align:right;">
-                    <button class="btn btn-outline btn-small" onclick="app.deletePersonnel(${u.id})"><i class='bx bx-trash' style="color:var(--danger-text)"></i></button>
+                    ${actionButtons}
                 </td>
             `;
             tbody.appendChild(tr);
@@ -885,11 +1019,13 @@ const app = {
     },
 
     deletePersonnel: (id) => {
-        app.confirmAction('Bu personeli silmek istediğinize emin misiniz?', async () => {
-            const success = await MockAPI.deleteUser(id);
-            if (success) {
-                app.showToast("Personel silindi", "success");
-                app.loadPersonnelList();
+        app.showConfirm('Onay', 'Bu personeli silmek istediğinize emin misiniz?').then(async (confirmed) => {
+            if (confirmed) {
+                const success = await MockAPI.deleteUser(id);
+                if (success) {
+                    app.showToast("Personel silindi", "success");
+                    app.loadPersonnelList();
+                }
             }
         });
     }
