@@ -195,6 +195,21 @@ const MockAPI = {
         }
     },
 
+    updateUser: async (id, username, password, permissions) => {
+        try {
+            const res = await fetch(`${API_BASE}/users`, {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify({ id, username, password, permissions })
+            });
+            return await handleResponse(res);
+        } catch (e) {
+            console.error("Error updating user:", e);
+            if(window.app && window.app.showToast) window.app.showToast(e.message || "Hata", "error");
+            return { success: false, error: e.message };
+        }
+    },
+
     deleteUser: async (id) => {
         try {
             const res = await fetch(`${API_BASE}/users`, {

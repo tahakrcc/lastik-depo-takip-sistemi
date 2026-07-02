@@ -514,9 +514,26 @@
                     </div>
                     
                     <div class="card">
-                        <div class="filter-input" style="margin: 20px 24px;">
-                            <i class='bx bx-search'></i>
-                            <input type="text" id="salesSearchInput" placeholder="Müşteri Adı, Telefon veya SKU ile ara..." oninput="app.filterSales()">
+                        <div class="filter-top-bar" style="display: flex; gap: 10px; margin: 20px 24px;">
+                            <div class="filter-input" style="flex: 1;">
+                                <i class='bx bx-search'></i>
+                                <input type="text" id="salesSearchInput" placeholder="Müşteri Adı, Telefon veya SKU ile ara..." onkeyup="app.filterSales()">
+                            </div>
+                            <div class="filter-select">
+                                <select id="salesWarehouseFilter" onchange="app.filterSales()">
+                                    <option value="ALL">Tüm Şubeler</option>
+                                    <option value="TK 1">TK 1</option>
+                                    <option value="TK 2">TK 2</option>
+                                </select>
+                            </div>
+                            <div class="filter-select">
+                                <select id="salesDateFilter" onchange="app.filterSales()">
+                                    <option value="ALL">Tüm Zamanlar</option>
+                                    <option value="TODAY">Bugün</option>
+                                    <option value="WEEK">Bu Hafta</option>
+                                    <option value="MONTH">Bu Ay</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="table-responsive">
                             <table>
@@ -636,56 +653,86 @@
 
     <!-- New Sale Modal -->
     <div class="modal-overlay" id="newSaleModal">
-        <div class="modal" style="max-width: 500px; width: 100%;">
-            <h3>Yeni Satış Yap</h3>
-            <div class="form-group" style="margin-top: 15px;">
-                <label>Müşteri Adı Soyadı</label>
-                <input type="text" id="saleCustomerName" class="form-control" placeholder="Örn: Ahmet Yılmaz" required>
+        <div class="modal" style="max-width: 600px; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">Yeni Satış Yap</h3>
+                <button class="icon-btn" onclick="app.closeNewSaleModal()"><i class='bx bx-x'></i></button>
             </div>
-            <div class="form-group">
-                <label>Telefon Numarası</label>
-                <input type="text" id="saleCustomerPhone" class="form-control" placeholder="Örn: 05551234567" required>
-            </div>
-            <div class="form-group">
-                <label>Ürün Kodu (SKU) ve Şube</label>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="saleSku" class="form-control" placeholder="SKU" style="flex:2;" required>
-                    <select id="saleWarehouse" class="form-control" style="flex:1;" required>
-                        <!-- Loaded from JS -->
-                    </select>
+
+            <!-- Step 1: Stock Selection -->
+            <div id="saleStep1">
+                <div class="filter-input" style="margin-bottom: 20px;">
+                    <i class='bx bx-search'></i>
+                    <input type="text" id="saleStockSearch" placeholder="Stoklarda SKU, Marka veya Model Ara..." onkeyup="app.filterSaleStock()">
                 </div>
-                <small style="color:#666; display:block; margin-top:5px;">Not: Ürün kodu deposunda bulunmazsa çıkış yapılamaz.</small>
-            </div>
-            <div style="display:flex; gap:15px;">
-                <div class="form-group" style="flex:1;">
-                    <label>Adet</label>
-                    <input type="number" id="saleQty" class="form-control" min="1" value="1" required>
+                <div class="table-responsive" style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 6px;">
+                    <table class="table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">Seç</th>
+                                <th>Ürün (SKU)</th>
+                                <th>Marka/Model</th>
+                                <th>Şube</th>
+                                <th>Mevcut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sale-stock-body">
+                            <!-- JS Render -->
+                        </tbody>
+                    </table>
                 </div>
-                <div class="form-group" style="flex:1;">
-                    <label>Toplam Tutar (₺)</label>
-                    <input type="number" id="salePrice" class="form-control" min="0" placeholder="Örn: 5000" required>
-                </div>
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                <button class="btn" style="background: #e2e8f0; color: #333;" onclick="app.closeNewSaleModal()">İptal</button>
-                <button class="btn btn-primary" onclick="app.handleNewSaleSubmit()">Satışı Tamamla</button>
+
+            <!-- Step 2: Sale Details -->
+            <div id="saleStep2" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-light);">
+                <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 12px; border-radius: 6px; margin-bottom: 15px;">
+                    <h4 id="sale-selected-product" style="color: #1e40af; font-size: 14px; margin: 0;">Seçilen Ürün: -</h4>
+                    <input type="hidden" id="saleSku">
+                    <input type="hidden" id="saleWarehouse">
+                    <input type="hidden" id="saleMaxQty">
+                </div>
+
+                <div class="form-grid form-grid-2">
+                    <div class="form-group">
+                        <label>Müşteri Adı Soyadı</label>
+                        <input type="text" id="saleCustomerName" class="form-control" placeholder="Örn: Ahmet Yılmaz" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Telefon Numarası</label>
+                        <input type="text" id="saleCustomerPhone" class="form-control" placeholder="Örn: 05551234567" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Satılacak Adet</label>
+                        <input type="number" id="saleQty" class="form-control" min="1" value="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Toplam Tutar (₺)</label>
+                        <input type="number" id="salePrice" class="form-control" min="0" placeholder="Örn: 5000" required>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button class="btn btn-outline" onclick="app.saleBackToStep1()">Geri Dön</button>
+                    <button class="btn btn-primary" onclick="app.handleNewSaleSubmit()">Satışı Tamamla</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- New Personnel Modal -->
+    <!-- Personnel Modal -->
     <div class="modal-overlay" id="personnelModal">
         <div class="modal" style="max-width: 500px; width: 100%;">
-            <h3>Yeni Personel Ekle</h3>
+            <h3 id="p_modal_title">Yeni Personel Ekle</h3>
+            <input type="hidden" id="p_id" value="">
             <div class="form-group" style="margin-top: 15px;">
                 <label>Kullanıcı Adı</label>
                 <input type="text" id="p_username" class="form-control" required>
             </div>
             <div class="form-group">
-                <label>Şifre</label>
+                <label>Şifre <span id="p_password_hint" style="color:#666; font-size:11px; font-weight:normal; display:none;">(Değiştirmek istemiyorsanız boş bırakın)</span></label>
                 <input type="password" id="p_password" class="form-control" required>
             </div>
-            <div class="form-group">
+            <div class="form-group" id="p_perms_group">
                 <label>Erişim Yetkileri (Sayfalar)</label>
                 <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px; background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #e9ecef;">
                     <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; margin: 0;"><input type="checkbox" name="p_perms" value="dashboard"> Ana Sayfa (Dashboard)</label>
@@ -699,7 +746,7 @@
             
             <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
                 <button class="btn" style="background: #e2e8f0; color: #333;" onclick="app.closePersonnelModal()">İptal</button>
-                <button class="btn btn-primary" onclick="app.handlePersonnelSubmit()">Oluştur</button>
+                <button class="btn btn-primary" onclick="app.handlePersonnelSubmit()" id="p_submit_btn">Oluştur</button>
             </div>
         </div>
     </div>
