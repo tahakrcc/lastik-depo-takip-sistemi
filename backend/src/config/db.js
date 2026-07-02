@@ -7,7 +7,7 @@ require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
 const connectDB = async () => {
     try {
-        const uri = process.env.MONGODB_URI || "mongodb+srv://gunesgozlemcisi_db_user:adana123@cluster0.azseniu.mongodb.net/inonu_site?retryWrites=true&w=majority&appName=Cluster0";
+        const uri = process.env.MONGODB_URI || "mongodb://gunesgozlemcisi_db_user:adana123@ac-c0umnms-shard-00-00.azseniu.mongodb.net:27017,ac-c0umnms-shard-00-01.azseniu.mongodb.net:27017,ac-c0umnms-shard-00-02.azseniu.mongodb.net:27017/inonu_site?ssl=true&replicaSet=atlas-km05m6-shard-0&authSource=admin&retryWrites=true&w=majority&appName=Cluster0";
         if (!uri) {
             console.error('MONGODB_URI is not defined in .env file and no fallback provided');
             return;
