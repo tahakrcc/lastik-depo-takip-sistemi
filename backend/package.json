@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Lastik Depo Takip Sistemi",
   "main": "main.js",
   "bin": "server.js",
@@ -35,6 +35,7 @@
     },
     "files": [
       "**/*",
+      "../frontend-demo/**/*",
       ".env",
       "!node_modules/sqlite3",
       "!node_modules/pkg"
