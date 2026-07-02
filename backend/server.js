@@ -74,7 +74,10 @@ app.post('/api/system/shutdown', (req, res) => {
 // Static Serving for Frontend
 let frontendPath = path.join(__dirname, 'frontend-demo');
 if (!fs.existsSync(frontendPath)) {
-    frontendPath = path.resolve(__dirname, '../frontend-demo');
+    frontendPath = path.join(__dirname, '../frontend-demo');
+    if (!fs.existsSync(frontendPath) && process.resourcesPath) {
+        frontendPath = path.join(process.resourcesPath, 'app.asar/frontend-demo');
+    }
 }
 app.use(express.static(frontendPath));
 

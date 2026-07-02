@@ -23,7 +23,16 @@ function createWindow() {
 
     // Ana pencereyi localhost'a yönlendir (server.js üzerinden)
     const port = process.env.PORT || 3000;
-    mainWindow.loadURL(`http://localhost:${port}`);
+    const url = `http://localhost:${port}`;
+    
+    const loadURLWithRetry = () => {
+        mainWindow.loadURL(url).catch((err) => {
+            console.log('Server not ready yet, retrying in 500ms...');
+            setTimeout(loadURLWithRetry, 500);
+        });
+    };
+    
+    loadURLWithRetry();
 
     mainWindow.once('ready-to-show', () => {
         mainWindow.show();
